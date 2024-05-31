@@ -106,7 +106,9 @@ def get_db() -> mysql.connector.connection.MySQLConnection:
 
 
 def main() -> None:
-    """doc"""
+    """Main function to retrieve user data from
+    database and log to console.
+    """
     db = get_db()
     cursor = db.cursor()
     cursor.execute("SELECT * FROM users")
@@ -120,3 +122,7 @@ def main() -> None:
 
     cursor.close()
     db.close()
+
+
+if __name__ == "__main__":
+    main()
