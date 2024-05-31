@@ -25,7 +25,19 @@ import logging
 def filter_datum(
     fields: List[str], redaction: str, message: str, separator: str
 ) -> str:
-    """Returns the log message obfuscated using Regex."""
+    """
+    Replaces sensitive information in a message with a redacted value
+    based on the list of fields to redact
+
+    Args:
+        fields: list of fields to redact
+        redaction: the value to use for redaction
+        message: the string message to filter
+        separator: the separator to use between fields
+
+    Returns:
+        The filtered string message with redacted values
+    """
     for field in fields:
         regex = f"{field}=[^{separator}]*"
         message = re.sub(regex, f"{field}={redaction}", message)
@@ -47,3 +59,27 @@ class RedactingFormatter(logging.Formatter):
         """Return the log message obfuscated using Regex."""
         org = super().format(record)
         return filter_datum(self.fields, self.REDACTION, org, self.SEPARATOR)
+
+
+# PII fileds to be redacted
+PII_FIELDS = ("name", "phone", "ssn", "password", "ip")
+
+
+def get_logger() -> logging.Logger:
+    """
+    Returns a Logger object for handling Personal Data
+
+    Returns:
+        A Logger object with INFO log level and RedactingFormatter
+        formatter for filtering PII fields
+    """
+
+    logger = logging.getLogger("user_data")
+    logger.setLevel(logging.INFO)
+    logger.propagate = False
+
+    stream_handler = logging.StreamHandler()
+    stream_handler.setFormatter(RedactingFormatter(list(PII_FIELDS)))
+    logger.addHandler(stream_handler)
+
+    return logger
